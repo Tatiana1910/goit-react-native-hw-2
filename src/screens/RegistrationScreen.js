@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   TouchableWithoutFeedback,
   View,
@@ -10,7 +10,7 @@ import {
   TextInput,
   StyleSheet,
   Keyboard,
-  Dimensions,
+  useWindowDimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/AntDesign";
 
@@ -38,29 +38,18 @@ const RegistrationScreen = () => {
   const [isEmail, setIsEmail] = useState(false);
   const [isPassword, setIsPassword] = useState(false);
 
-  const [dimensions, setdimensions] = useState(
-    Dimensions.get("window").width - 16 * 2
-  );
-
-  useEffect(() => {
-    const onChange = () => {
-      const width = Dimensions.get("window").width - 16 * 2;
-
-      setdimensions(width);
-    };
-    Dimensions.addEventListener("change", onChange);
-    return () => {
-      Dimensions.removeEventListener("change", onChange);
-    };
-  }, []);
+  const { width } = useWindowDimensions();
 
   const keyboardHide = () => {
     setIsShownKeyboard(false);
     Keyboard.dismiss();
+  };
+
+  const handleSubmit = () => {
+    keyboardHide();
     console.log(state);
     setState(initialState);
   };
-
   if (!iasReady) {
     return (
       <AppLoading
@@ -75,32 +64,32 @@ const RegistrationScreen = () => {
     <TouchableWithoutFeedback onPress={keyboardHide}>
       <View style={styles.container}>
         <ImageBackground
-          style={{ ...styles.image, marginBottom: isShownKeyboard ? -180 : 0 }}
+          style={styles.image}
           source={require("../images/bg.jpg")}
         >
-          <View
-            style={{
-              ...styles.contentThumb,
-              marginBottom: isShownKeyboard ? 100 : 0,
-            }}
-          >
-            <View style={styles.photoContainer}>
-              <View style={styles.imageThumb}></View>
-              <TouchableOpacity style={styles.imageBtn} activeOpacity={0.7}>
-                <Icon
-                  name="pluscircleo"
-                  size={30}
-                  color="#FF6C00"
-                  margin="auto"
-                />
-              </TouchableOpacity>
-            </View>
-            <KeyboardAvoidingView
-              behavior={Platform.OS === "ios" ? "padding" : "height"}
-              style={styles.keybordContainer}
+          <KeyboardAvoidingView behavior={Platform.OS === "ios" && "padding"}>
+            <View
+              style={{
+                ...styles.form,
+                paddingBottom: isShownKeyboard ? 0 : 70,
+              }}
             >
-              <View style={{ ...styles.form, width: dimensions }}>
-                <Text style={styles.pageTitle}>Регистрация</Text>
+              <View style={styles.photoContainer}>
+                <View style={styles.imageThumb}></View>
+                <TouchableOpacity style={styles.imageBtn} activeOpacity={0.7}>
+                  <Icon
+                    name="pluscircleo"
+                    size={30}
+                    color="#FF6C00"
+                    margin="auto"
+                  />
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ width: width - 2 * 16 }}>
+                <View style={styles.header}>
+                  <Text style={styles.title}>Регистрация</Text>
+                </View>
 
                 <View style={{ marginBottom: 16 }}>
                   <TextInput
@@ -121,24 +110,27 @@ const RegistrationScreen = () => {
                     }
                   />
                 </View>
-                <TextInput
-                  style={{
-                    ...styles.input,
+                <View style={{ marginBottom: 16 }}>
+                  <TextInput
+                    style={{
+                      ...styles.input,
 
-                    borderColor: isEmail ? "#ff6c00" : "#e8e8e8",
-                    backgroundColor: isEmail ? "#fff" : "#f6f6f6",
-                  }}
-                  onBlur={() => setIsEmail(false)}
-                  placeholder="Адрес электронной почты"
-                  value={state.email}
-                  onFocus={() => {
-                    setIsShownKeyboard(true);
-                    setIsEmail(true);
-                  }}
-                  onChangeText={(value) =>
-                    setState((prevState) => ({ ...prevState, email: value }))
-                  }
-                />
+                      borderColor: isEmail ? "#ff6c00" : "#e8e8e8",
+                      backgroundColor: isEmail ? "#fff" : "#f6f6f6",
+                    }}
+                    onBlur={() => setIsEmail(false)}
+                    placeholder="Адрес электронной почты"
+                    value={state.email}
+                    onFocus={() => {
+                      setIsShownKeyboard(true);
+                      setIsEmail(true);
+                    }}
+                    onChangeText={(value) =>
+                      setState((prevState) => ({ ...prevState, email: value }))
+                    }
+                  />
+                </View>
+
                 <View style={{ position: "relative" }}>
                   <TextInput
                     style={{
@@ -164,7 +156,7 @@ const RegistrationScreen = () => {
                     }
                   />
                   <TouchableOpacity
-                    activeOpacity={0.8}
+                    activeOpacity={0.7}
                     style={styles.btnPassword}
                     onPress={() => {
                       setIsPasswordHidden((prevState) => !prevState);
@@ -175,24 +167,26 @@ const RegistrationScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={styles.button}
-                  onPress={keyboardHide}
-                >
-                  <Text style={styles.text}>Зарегистрироваться</Text>
-                </TouchableOpacity>
+
+                {!isShownKeyboard && (
+                  <View>
+                    <TouchableOpacity
+                      style={styles.button}
+                      activeOpacity={0.7}
+                      onPress={handleSubmit}
+                    >
+                      <Text style={styles.btnTitle}>Зарегистрироваться</Text>
+                    </TouchableOpacity>
+                    <View style={styles.link}>
+                      <Text style={styles.linkTitle}>
+                        Уже есть аккаунт? Войти
+                      </Text>
+                    </View>
+                  </View>
+                )}
               </View>
-              <Text
-                style={{
-                  ...styles.linkText,
-                  marginBottom: isShownKeyboard ? 0 : 45,
-                }}
-              >
-                Уже есть аккаунт? Войти
-              </Text>
-            </KeyboardAvoidingView>
-          </View>
+            </View>
+          </KeyboardAvoidingView>
         </ImageBackground>
       </View>
     </TouchableWithoutFeedback>
@@ -204,27 +198,20 @@ export default RegistrationScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#fff",
   },
   image: {
     flex: 1,
     resizeMode: "cover",
     justifyContent: "flex-end",
   },
-  keybordContainer: {
-    flex: 0,
+  form: {
     alignItems: "center",
-    justifyContent: "center",
-    width: "100%",
-  },
-  contentThumb: {
-    position: "relative",
-    flex: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    height: "67%",
+    backgroundColor: "#FFFFFF",
     borderTopLeftRadius: 25,
     borderTopRightRadius: 25,
-    backgroundColor: "#fff",
+    position: "relative",
+    paddingTop: 92,
   },
   photoContainer: {
     position: "absolute",
@@ -250,24 +237,34 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     backgroundColor: "#fff",
   },
-  form: {
-    flex: 0,
-    width: "100%",
+  header: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 30,
+    fontWeight: "500",
+    lineHeight: 35,
+    letterSpacing: 0.01,
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
   },
   input: {
-    // marginHorizontal: 16,
-    padding: 16,
-    // backgroundColor: "#F6F6F6",
     borderWidth: 1,
-    // borderColor: "#E8E8E8",
+    height: 50,
     borderRadius: 8,
+    paddingHorizontal: 16,
     fontSize: 16,
     lineHeight: 19,
+    color: "#212121",
+    fontFamily: "Roboto-Regular",
+    backgroundColor: "#F6F6F6",
   },
-  btnPassword: {
+  btn: {
     position: "absolute",
-    top: 35,
-    right: 35,
+    top: 16,
+    right: 16,
   },
   textPassword: {
     fontSize: 16,
@@ -275,33 +272,35 @@ const styles = StyleSheet.create({
     color: "#1B4371",
     fontFamily: "Roboto-Regular",
   },
-  pageTitle: {
-    alignSelf: "center",
-    marginTop: 92,
-    marginBottom: 33,
-    fontWeight: 500,
-    fontSize: 30,
-    lineHeight: 35,
-    fontFamily: "Roboto-Regular",
+  btnPassword: {
+    position: "absolute",
+    top: 30,
+    right: 25,
   },
+
   button: {
-    marginHorizontal: 16,
-    paddingVertical: 16,
-    paddingHorizontal: 32,
+    borderWidth: 1,
+    height: 50,
     borderRadius: 100,
-    backgroundColor: "#FF6C00",
+    marginTop: 43,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ff6c00",
+    borderColor: "transparent",
   },
-  text: {
-    alignSelf: "center",
-    color: "#ffffff",
+  btnTitle: {
     fontSize: 16,
     lineHeight: 19,
+    color: "#FFFFFF",
     fontFamily: "Roboto-Regular",
   },
-  linkText: {
+  link: {
+    justifyContent: "center",
+    alignItems: "center",
     marginTop: 16,
-    marginBottom: 66,
-    color: "#1B4371",
+  },
+  linkTitle: {
+    color: "#1b4371",
     fontSize: 16,
     lineHeight: 19,
     fontFamily: "Roboto-Regular",
